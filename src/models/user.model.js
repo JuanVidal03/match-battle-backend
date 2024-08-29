@@ -24,7 +24,7 @@ const userSchema = await mongoose.Schema({
     },
     estado:{
         type: Boolean,
-        required: false
+        required: true
     },
     cartas: [{
         type: mongoose.Schema.Types.ObjectId,

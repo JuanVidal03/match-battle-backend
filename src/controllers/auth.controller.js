@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { UserModel } from "../models/user.model.js";
 
 export const login = async(req, res) => {
 
@@ -7,21 +8,19 @@ export const login = async(req, res) => {
 
     try {
 
-        const userFound = await prisma.user.findFirst({
-            where: { email }
-        })
+        const userFound = await UserModel.findOne({ email });
         if(!userFound) return res.status(404).json({ message: `El usuario ${email} no existe.` });
         
         const comparePassword = await bcrypt.compare(password, userFound.password);
         if(comparePassword === false) return res.status(400).json({ message: "Contraseña o email incorrectos." });
-        
+
         const user = {
             id: userFound.id,
-            name: userFound.name,
+            nombreCompleto: userFound.nombreCompleto,
             email: userFound.email,
-            direccion: userFound.direccion,
-            createdAt: userFound.createdAt,
-            updatedAt: userFound.updatedAt
+            telefono: userFound.telefono,
+            estado: userFound.estado,
+            cartas: userFound.cartas
         }
 
         jwt.sign(
@@ -55,30 +54,26 @@ export const login = async(req, res) => {
 
 export const register = async(req, res) => {
     
-    const { name, email, password, direccion } = req.body;
+    const { nombreCompleto, email, password, telefono, estado, cartas } = req.body;
     
     try {
 
-        const foundUser = await prisma.user.findFirst({
-            where: { email: email }
-        });
+        const foundUser = await UserModel.findOne({ email });
         if(foundUser) return res.status(400).json({ message: `El usuario con email: ${email} ya existe.` });
 
-        const user = { name, email, password, direccion };
+        const user = { nombreCompleto, email, password, telefono, estado, cartas };
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
         
-        const createdUser = await prisma.user.create({
-            data: user
-        });
+        const createdUser = await UserModel.create(user);
 
         const result = {
-            name: createdUser.name,
+            nombreCompleto: createdUser.nombreCompleto,
             email: createdUser.email,
-            direccion: createdUser.direccion,
-            createdAt: createdUser.createdAt,
-            updatedAt: createdUser.updatedAt
+            telefono: createdUser.telefono,
+            estado: createdUser.estado,
+            cartas: createdUser.cartas
         };
 
         res.status(201).json({ message: "Usuario registrado exitosamente.", data: result });
@@ -86,7 +81,7 @@ export const register = async(req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            message: "Error al registrar el usuarios",
+            message: "Error al registrar el usuario.",
             error: error.message
         });
     }
@@ -103,12 +98,20 @@ export const veriFyToken = async(req, res) => {
         jwt.verify(token, process.env.TOKEN_SECRET, async(error, user) => {
             if(error) return res.status(400).json({ message: error.message });
 
-            const userFound = await prisma.user.findFirst({ where: { id: user.id } });
+            const userFound = await UserModel.findById(user.id);
             if(!userFound) return res.status(404).json({ message: `Usuario con id: ${user.is} no existe.` });
+
+            const userResult = {
+                nombreCompleto: userFound.nombreCompleto,
+                email: userFound.email,
+                telefono: userFound.telefono,
+                estado: userFound.estado,
+                cartas: userFound.cartas
+            }
 
             return res.status(200).json({
                 message: "Token verificado exitosamente.",
-                data: userFound
+                data: userResult
             });
         })
 

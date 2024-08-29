@@ -25,10 +25,11 @@ app.use(morgan("dev"));
 
 import authRoutes from "./routes/auth.routes.js";
 import cardsRoutes from "./routes/card.routes.js";
+import userRouter from "./routes/user.routes.js";
 
 app.use("/api", authRoutes);
 app.use("/api", cardsRoutes);
-
+app.use("/api", userRouter);
 
 
 
