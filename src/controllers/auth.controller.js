@@ -28,7 +28,7 @@ export const login = async(req, res) => {
         jwt.sign(
             { id: user._id },
             process.env.TOKEN_SECRET,
-            { expiresIn: "1h" },
+            { expiresIn: "10h" },
             (error, token) => {
                 error && res.status(400).json({ message: "Error al generar el token.", error });
                 res.cookie("token", token, {
