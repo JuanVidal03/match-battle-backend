@@ -14,17 +14,19 @@ export const login = async(req, res) => {
         const comparePassword = await bcrypt.compare(password, userFound.password);
         if(comparePassword === false) return res.status(400).json({ message: "Contraseña o email incorrectos." });
 
+        const finalUser = await UserModel.findByIdAndUpdate(userFound._id, {estado: true}, {new: true});
+
         const user = {
-            id: userFound.id,
-            nombreCompleto: userFound.nombreCompleto,
-            email: userFound.email,
-            telefono: userFound.telefono,
-            estado: userFound.estado,
-            cartas: userFound.cartas
+            _id: finalUser._id,
+            nombreCompleto: finalUser.nombreCompleto,
+            email: finalUser.email,
+            telefono: finalUser.telefono,
+            estado: finalUser.estado,
+            cartas: finalUser.cartas
         }
 
         jwt.sign(
-            { id: user.id },
+            { id: user._id },
             process.env.TOKEN_SECRET,
             { expiresIn: "1h" },
             (error, token) => {
@@ -99,9 +101,10 @@ export const veriFyToken = async(req, res) => {
             if(error) return res.status(400).json({ message: error.message });
 
             const userFound = await UserModel.findById(user.id);
-            if(!userFound) return res.status(404).json({ message: `Usuario con id: ${user.is} no existe.` });
+            if(!userFound) return res.status(404).json({ message: `Usuario con id: ${user.id} no existe.` });
 
             const userResult = {
+                _id: userFound._id,
                 nombreCompleto: userFound.nombreCompleto,
                 email: userFound.email,
                 telefono: userFound.telefono,
@@ -125,12 +128,15 @@ export const veriFyToken = async(req, res) => {
 }
 
 export const logout = async(req, res) => {
+
+    const { id } = req.params;
+
     try {
 
         res.cookie("token", "", {
             expires: new Date(0)
         });
-        
+        await UserModel.findByIdAndUpdate(id, {estado: false}, {new: true});
         res.status(200).json({ message: "Sesion cerrada exitosamente." });
         
     } catch (error) {

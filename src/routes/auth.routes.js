@@ -5,7 +5,7 @@ const authRoutes = Router();
 
 authRoutes.post("/register", register);
 authRoutes.post("/login", login);
-authRoutes.post("/logout", logout);
+authRoutes.post("/logout/:id", logout);
 authRoutes.get("/verify-token", veriFyToken);
 
 export default authRoutes;
