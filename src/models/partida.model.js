@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const partidaSchema = await mongoose.Schema({
+    numParticipantes: {
+        type: Number,
+        required: true,
+    },
     participantes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "user"
