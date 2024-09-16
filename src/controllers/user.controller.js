@@ -4,7 +4,7 @@ import { UserModel } from "../models/user.model.js";
 export const getAllUser = async(req, res) => {
     try {
         
-        const users = await UserModel.find({});
+        const users = await UserModel.find({}).populate("cartas");
 
         res.status(200).json({
             message: "Users successfully obtained!",
@@ -25,7 +25,7 @@ export const getUserById = async(req, res) => {
 
     try {
 
-        const userFound = await UserModel.findById(id);
+        const userFound = await UserModel.findById(id).populate('cartas');
 
         if(!userFound) return res.status(404).json({
             message: `The user with id: ${id} has not been found.`,
@@ -44,4 +44,36 @@ export const getUserById = async(req, res) => {
             error: error.message,
         });
     }
+}
+
+export const updateUserCards = async(req, res) => {
+
+    const { id } = req.params;
+    const cartas = req.body;
+
+
+    try {
+        
+        const foundUser = await UserModel.findById(id);
+        if(!foundUser) return res.status(404).json({
+            message: `The user with id ${id} has not been found.`,
+            data: []
+        });
+
+        const updatedUserCards = await UserModel.findByIdAndUpdate(id, cartas, { new: true }).populate("cartas");
+
+        res.status(200).json({
+            message: "Cards updated successfully!",
+            data: updatedUserCards
+        });
+
+
+    } catch (error) {
+        res.status(500).json({
+            message: `Error update teh cards of the user: ${id}`,
+            error: error.message,
+        });
+    }
+
+
 }

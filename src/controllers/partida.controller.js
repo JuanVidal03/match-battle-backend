@@ -29,7 +29,11 @@ export const getPartidaById = async(req, res) => {
         
         const foundPartida = await PartidaModel.findById(id).populate({
             path: "participantes",
-            select: "-password"
+            select: "-password",
+            populate: {
+                path: "cartas",
+                model: "card"
+            }
         });
 
         if(!foundPartida) return res.status(404).json({
